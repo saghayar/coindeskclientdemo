@@ -1,0 +1,17 @@
+spring:
+  main:
+    web-application-type: none
+  profiles:
+    active: dev
+
+server:
+  port: 9091
+
+api:
+  coinDesk:
+    current-bitcoin-rate:
+      url: https://api.coindesk.com/v1/bpi/currentprice/%s.json
+    historical-bitcoin-rate:
+      url: https://api.coindesk.com/v1/bpi/historical/close.json?currency=%s&start=%s&end=%s
+    supported-currencies:
+      url: https://api.coindesk.com/v1/bpi/supported-currencies.json
