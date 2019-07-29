@@ -1,7 +1,7 @@
 package com.task.coindeskdemo.service;
 
 import com.task.coindeskdemo.model.BitcoinRate;
-import com.task.coindeskdemo.model.HistoricalBitcoinRate;
+import com.task.coindeskdemo.model.BitcoinRateStatistics;
 import com.task.coindeskdemo.model.SupportedCurrency;
 
 import java.io.IOException;
@@ -14,5 +14,5 @@ public interface ICoinDeskService {
 
     List<SupportedCurrency> fetchSupportedCurrencies();
 
-    HistoricalBitcoinRate fetchHistoricalRateDetails(String currency, LocalDate startDate, LocalDate endDate) throws IOException;
+    BitcoinRateStatistics fetchHistoricalRateDetails(String currency, LocalDate startDate, LocalDate endDate) throws IOException;
 }

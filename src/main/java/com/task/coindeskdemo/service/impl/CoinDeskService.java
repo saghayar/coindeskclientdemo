@@ -4,13 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.task.coindeskdemo.exceptions.BitcoinRateFetchException;
 import com.task.coindeskdemo.model.BitcoinRate;
-import com.task.coindeskdemo.model.HistoricalBitcoinRate;
+import com.task.coindeskdemo.model.BitcoinRateStatistics;
 import com.task.coindeskdemo.model.SupportedCurrency;
 import com.task.coindeskdemo.service.ICoinDeskService;
 import com.task.coindeskdemo.utils.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -62,7 +61,7 @@ public class CoinDeskService implements ICoinDeskService {
     }
 
     @Override
-    public HistoricalBitcoinRate fetchHistoricalRateDetails(String currency, LocalDate startDate, LocalDate endDate) throws IOException {
+    public BitcoinRateStatistics fetchHistoricalRateDetails(String currency, LocalDate startDate, LocalDate endDate) throws IOException {
         ResponseEntity<String> response = restTemplate.getForEntity(String.format(historicalBitcoinRateUrl,
                 currency, startDate.toString(), endDate.toString()), String.class);
 
@@ -75,7 +74,7 @@ public class CoinDeskService implements ICoinDeskService {
                 .mapToDouble(JsonNode::asDouble)
                 .summaryStatistics();
 
-        return HistoricalBitcoinRate.builder()
+        return BitcoinRateStatistics.builder()
                 .highest(statistics.getMax())
                 .lowest(statistics.getMin())
                 .build();

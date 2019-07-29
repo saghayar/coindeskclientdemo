@@ -1,7 +1,7 @@
 package com.task.coindeskdemo.runner;
 
 import com.task.coindeskdemo.model.BitcoinRate;
-import com.task.coindeskdemo.model.HistoricalBitcoinRate;
+import com.task.coindeskdemo.model.BitcoinRateStatistics;
 import com.task.coindeskdemo.service.ICoinDeskService;
 import com.task.coindeskdemo.utils.CoinDeskUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +42,7 @@ public class CoinDeskCommandLineRunner implements CommandLineRunner {
                 //Fetching historical rates for last 30 days
                 final LocalDate endDate = LocalDate.now();
                 final LocalDate startDate = endDate.minusDays(30);
-                HistoricalBitcoinRate historicalRate = coinDeskService.fetchHistoricalRateDetails(currency,
+                BitcoinRateStatistics historicalRate = coinDeskService.fetchHistoricalRateDetails(currency,
                         startDate, endDate);
 
                 //Displaying result

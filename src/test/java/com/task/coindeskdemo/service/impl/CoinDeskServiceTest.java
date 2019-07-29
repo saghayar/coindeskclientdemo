@@ -1,47 +1,48 @@
 package com.task.coindeskdemo.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.task.coindeskdemo.CoinDeskDemoApplication;
+import com.task.coindeskdemo.CoinDeskDemoApplicationTest;
+import com.task.coindeskdemo.exceptions.BitcoinRateFetchException;
 import com.task.coindeskdemo.model.BitcoinRate;
+import com.task.coindeskdemo.model.BitcoinRateStatistics;
+import com.task.coindeskdemo.utils.Constants;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
-import org.junit.runner.RunWith;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.util.Arrays;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@ActiveProfiles("{test}")
-@TestPropertySource("classpath:application-default.yml")
-public class CoinDeskServiceTest {
+public class CoinDeskServiceTest extends CoinDeskDemoApplicationTest {
     public static final String USD = "USD";
     private static final String RESPONSE_BODY = "BODY";
+    private static final String BPI = "bpi";
+    public static final LocalDate START_DATE = LocalDate.of(2019, 06, 27);
+    public static final LocalDate END_DATE = LocalDate.of(2019, 07, 27);
+    private static String historicalRate;
     private BitcoinRate actualRate;
+    private BitcoinRateStatistics actualRateStatistics;
+
+    @Autowired
     private CoinDeskService coinDeskService;
-
-    @MockBean
-    private ObjectMapper mapper;
-
-    @MockBean
-    private RestTemplate restTemplate;
 
     @MockBean
     private ResponseEntity<String> response;
@@ -50,40 +51,101 @@ public class CoinDeskServiceTest {
     private ArgumentCaptor<String> stringArgumentCaptor;
 
     @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
+    @Rule
     public ErrorCollector collector = new ErrorCollector();
 
+    @BeforeClass
+    public static void init() throws IOException {
+        historicalRate = new String(Files.readAllBytes(Paths.get("/Users/admin/IdeaProjects/coindeskdemo/src/test/resources/historical-rates.json")));
+    }
 
     @Before
     public void setUp() throws Exception {
-        coinDeskService = new CoinDeskService(restTemplate, mapper);
-        actualRate = new BitcoinRate();
-        actualRate.setCode("USD");
-        actualRate.setSymbol("$");
-        actualRate.setRate("1234.56");
-        actualRate.setDescription("Description");
-        actualRate.setRateFloat(12.98D);
+        actualRate = BitcoinRate.builder()
+                .code("USD")
+                .symbol("$")
+                .rate("1234.56")
+                .description("Description")
+                .rateFloat(12.98D)
+                .build();
+
+        actualRateStatistics = BitcoinRateStatistics.builder()
+                .highest(12563.215)
+                .lowest(9422.4517)
+                .build();
     }
 
     @Test
-    public void fetchCurrentBitcoinRate() throws IOException {
+    public void whenFetchCurrentBitcoinRateThenReturnSuccess() throws IOException {
         //Arrange
-        JsonNode root = Mockito.mock(JsonNode.class, Mockito.CALLS_REAL_METHODS);
-        when(root.path(anyString())).thenReturn(root);
-        when(root.get(anyString())).thenReturn(root);
-        when(mapper.readTree(anyString())).thenReturn(root);
-        when(mapper.convertValue(any(JsonNode.class), eq(BitcoinRate.class))).thenReturn(actualRate);
-        when(response.getBody()).thenReturn(RESPONSE_BODY);
-        when(restTemplate.getForEntity(anyString(), eq(String.class))).thenReturn(response);
+        commonStubsFetchCurrentRate();
+        when(response.getStatusCode()).thenReturn(HttpStatus.OK);
 
         //Act
         BitcoinRate expectedRate = coinDeskService.fetchCurrentBitcoinRate(USD);
 
         //Assert
+        verify(mapper, times(1)).readTree(RESPONSE_BODY);
+        verify(mapper, times(1)).convertValue(any(JsonNode.class), eq(BitcoinRate.class));
+        verifyNoMoreInteractions(mapper);
+
+        collector.checkThat(stringArgumentCaptor.getAllValues(), is(equalTo(Arrays.asList(RESPONSE_BODY, BPI, USD))));
+
         collector.checkThat(expectedRate.getCode(), is(equalTo(actualRate.getCode())));
         collector.checkThat(expectedRate.getDescription(), is(equalTo(actualRate.getDescription())));
         collector.checkThat(expectedRate.getRate(), is(equalTo(actualRate.getRate())));
         collector.checkThat(expectedRate.getRateFloat(), is(equalTo(actualRate.getRateFloat())));
         collector.checkThat(expectedRate.getSymbol(), is(equalTo(actualRate.getSymbol())));
+    }
+
+
+    @Test
+    public void whenFetchCurrentBitcoinRateThenThrowBitcoinRateFetchException() throws IOException {
+        thrown.expect(BitcoinRateFetchException.class);
+        thrown.expectMessage(Constants.ERR_TRY_AGAIN_LATER.value());
+
+        //Arrange
+        commonStubsFetchCurrentRate();
+        when(response.getStatusCode()).thenReturn(HttpStatus.SERVICE_UNAVAILABLE);
+
+        //Act
+        coinDeskService.fetchCurrentBitcoinRate(USD);
+    }
+
+    @Test
+    public void whenFetchHistoricalRateDetailsThenReturnSuccess() throws IOException {
+        //Arrange
+        when(response.getBody()).thenReturn(historicalRate);
+        when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(restTemplate.getForEntity(stringArgumentCaptor.capture(), eq(String.class))).thenReturn(response);
+
+        //Act
+        BitcoinRateStatistics expectedStatistics = coinDeskService.
+                fetchHistoricalRateDetails(USD, START_DATE, END_DATE);
+
+        //Assert
+        verify(mapper, times(1)).readTree(historicalRate);
+
+        collector.checkThat(stringArgumentCaptor.getAllValues().size(), is(equalTo(1)));
+
+        collector.checkThat(expectedStatistics.getHighest(), is(equalTo(actualRateStatistics.getHighest())));
+        collector.checkThat(expectedStatistics.getLowest(), is(equalTo(actualRateStatistics.getLowest())));
+    }
+
+    @Test
+    public void whenFetchHistoricalRateDetailsThenThrowBitcoinRateFetchException() throws IOException {
+        thrown.expect(BitcoinRateFetchException.class);
+        thrown.expectMessage(Constants.ERR_TRY_AGAIN_LATER.value());
+
+        //Arrange
+        when(response.getBody()).thenReturn(historicalRate);
+        when(response.getStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);
+        when(restTemplate.getForEntity(stringArgumentCaptor.capture(), eq(String.class))).thenReturn(response);
+
+        //Act
+        coinDeskService.fetchHistoricalRateDetails(USD, START_DATE, END_DATE);
     }
 
     @Test
@@ -92,5 +154,15 @@ public class CoinDeskServiceTest {
 
     @Test
     public void fetchSupportedCurrencies() {
+    }
+
+    private void commonStubsFetchCurrentRate() throws IOException {
+        JsonNode root = Mockito.mock(JsonNode.class, Mockito.CALLS_REAL_METHODS);
+        when(root.path(stringArgumentCaptor.capture())).thenReturn(root);
+        when(root.get(stringArgumentCaptor.capture())).thenReturn(root);
+        doReturn(root).when(mapper).readTree(stringArgumentCaptor.capture());
+        doReturn(actualRate).when(mapper).convertValue(root, BitcoinRate.class);
+        when(response.getBody()).thenReturn(RESPONSE_BODY);
+        when(restTemplate.getForEntity(anyString(), eq(String.class))).thenReturn(response);
     }
 }

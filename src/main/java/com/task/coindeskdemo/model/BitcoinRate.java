@@ -1,11 +1,20 @@
 package com.task.coindeskdemo.model;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Data
+@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
         "code",
@@ -29,64 +38,5 @@ public class BitcoinRate {
     private Double rateFloat;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<>();
-
-    @JsonProperty("code")
-    public String getCode() {
-        return code;
-    }
-
-    @JsonProperty("code")
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    @JsonProperty("symbol")
-    public String getSymbol() {
-        return symbol;
-    }
-
-    @JsonProperty("symbol")
-    public void setSymbol(String symbol) {
-        this.symbol = symbol;
-    }
-
-    @JsonProperty("rate")
-    public String getRate() {
-        return rate;
-    }
-
-    @JsonProperty("rate")
-    public void setRate(String rate) {
-        this.rate = rate;
-    }
-
-    @JsonProperty("description")
-    public String getDescription() {
-        return description;
-    }
-
-    @JsonProperty("description")
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @JsonProperty("rate_float")
-    public Double getRateFloat() {
-        return rateFloat;
-    }
-
-    @JsonProperty("rate_float")
-    public void setRateFloat(Double rateFloat) {
-        this.rateFloat = rateFloat;
-    }
-
-    @JsonAnyGetter
-    public Map<String, Object> getAdditionalProperties() {
-        return this.additionalProperties;
-    }
-
-    @JsonAnySetter
-    public void setAdditionalProperty(String name, Object value) {
-        this.additionalProperties.put(name, value);
-    }
 }
+

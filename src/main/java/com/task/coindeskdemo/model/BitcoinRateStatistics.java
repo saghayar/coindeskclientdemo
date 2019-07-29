@@ -6,9 +6,8 @@ import lombok.Data;
 import lombok.Getter;
 
 @Data
-@Getter
 @Builder
-public class HistoricalBitcoinRate {
+public class BitcoinRateStatistics {
     private Double lowest;
     private Double highest;
 }

@@ -5,9 +5,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-@ControllerAdvice
-@Component
-@Slf4j
+//@ControllerAdvice
+//@Component
+//@Slf4j
 public class GlobalExceptionHandler {
 
     /**
@@ -15,7 +15,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler
     public void handle(Exception exception) {
-        log.error(exception.getMessage());
+        //log.error(exception.getMessage());
     }
 
 }
