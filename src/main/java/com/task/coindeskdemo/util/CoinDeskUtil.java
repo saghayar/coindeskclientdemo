@@ -1,4 +1,4 @@
-package com.task.coindeskdemo.utils;
+package com.task.coindeskdemo.util;
 
 import com.task.coindeskdemo.service.ICoinDeskService;
 import org.springframework.beans.factory.annotation.Autowired;

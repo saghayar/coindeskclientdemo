@@ -1,4 +1,4 @@
-package com.task.coindeskdemo.exceptions;
+package com.task.coindeskdemo.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

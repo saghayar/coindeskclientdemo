@@ -1,4 +1,4 @@
-package com.task.coindeskdemo.utils;
+package com.task.coindeskdemo.util;
 
 public enum Constants {
 

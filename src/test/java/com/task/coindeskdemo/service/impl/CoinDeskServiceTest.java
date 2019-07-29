@@ -2,11 +2,11 @@ package com.task.coindeskdemo.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.task.coindeskdemo.CoinDeskDemoApplicationTest;
-import com.task.coindeskdemo.exceptions.BitcoinRateFetchException;
+import com.task.coindeskdemo.exception.BitcoinRateFetchException;
 import com.task.coindeskdemo.model.BitcoinRate;
 import com.task.coindeskdemo.model.BitcoinRateStatistics;
 import com.task.coindeskdemo.model.SupportedCurrency;
-import com.task.coindeskdemo.utils.Constants;
+import com.task.coindeskdemo.util.Constants;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

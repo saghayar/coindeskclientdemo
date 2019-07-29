@@ -1,4 +1,4 @@
-package com.task.coindeskdemo.aspects;
+package com.task.coindeskdemo.aspect;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -7,7 +7,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
-import static com.task.coindeskdemo.utils.Constants.AROUND_LOG_MSG;
+import static com.task.coindeskdemo.util.Constants.AROUND_LOG_MSG;
 
 @Aspect
 @Slf4j

@@ -1,4 +1,4 @@
-package com.task.coindeskdemo.exceptions;
+package com.task.coindeskdemo.exception;
 
 public class BitcoinRateFetchException extends RuntimeException {
 

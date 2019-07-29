@@ -2,12 +2,12 @@ package com.task.coindeskdemo.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.task.coindeskdemo.exceptions.BitcoinRateFetchException;
+import com.task.coindeskdemo.exception.BitcoinRateFetchException;
 import com.task.coindeskdemo.model.BitcoinRate;
 import com.task.coindeskdemo.model.BitcoinRateStatistics;
 import com.task.coindeskdemo.model.SupportedCurrency;
 import com.task.coindeskdemo.service.ICoinDeskService;
-import com.task.coindeskdemo.utils.Constants;
+import com.task.coindeskdemo.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;

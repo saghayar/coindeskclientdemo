@@ -3,7 +3,7 @@ package com.task.coindeskdemo.runner;
 import com.task.coindeskdemo.model.BitcoinRate;
 import com.task.coindeskdemo.model.BitcoinRateStatistics;
 import com.task.coindeskdemo.service.ICoinDeskService;
-import com.task.coindeskdemo.utils.CoinDeskUtil;
+import com.task.coindeskdemo.util.CoinDeskUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Scanner;
 
-import static com.task.coindeskdemo.utils.Constants.*;
+import static com.task.coindeskdemo.util.Constants.*;
 
 @Component
 @Slf4j
