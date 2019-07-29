@@ -3,7 +3,6 @@ package com.task.coindeskdemo.model;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 
 @Data
 @Builder

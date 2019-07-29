@@ -13,6 +13,7 @@ public enum Constants {
     ERR_TRY_AGAIN_LATER("Something went wrong ,please try again later"),
     YES("Y"),
     NO("N"),
+    AROUND_LOG_MSG("Data Fetched from  *** {} in {} ms"),
     DISCLAIMER("This data was produced from the CoinDesk Bitcoin Price Index (USD). Non-USD currency data " +
             "converted using hourly conversion rate from openexchangerates.org");
 
