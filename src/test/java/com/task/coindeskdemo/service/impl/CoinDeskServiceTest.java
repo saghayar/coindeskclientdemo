@@ -5,6 +5,7 @@ import com.task.coindeskdemo.CoinDeskDemoApplicationTest;
 import com.task.coindeskdemo.exceptions.BitcoinRateFetchException;
 import com.task.coindeskdemo.model.BitcoinRate;
 import com.task.coindeskdemo.model.BitcoinRateStatistics;
+import com.task.coindeskdemo.model.SupportedCurrency;
 import com.task.coindeskdemo.utils.Constants;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -17,6 +18,8 @@ import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -25,6 +28,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -45,7 +50,10 @@ public class CoinDeskServiceTest extends CoinDeskDemoApplicationTest {
     private CoinDeskService coinDeskService;
 
     @MockBean
-    private ResponseEntity<String> response;
+    private ResponseEntity<String> stringResponseEntity;
+
+    @MockBean
+    private ResponseEntity<List<SupportedCurrency>> currencyResponseEntity;
 
     @Captor
     private ArgumentCaptor<String> stringArgumentCaptor;
@@ -81,7 +89,7 @@ public class CoinDeskServiceTest extends CoinDeskDemoApplicationTest {
     public void whenFetchCurrentBitcoinRateThenReturnSuccess() throws IOException {
         //Arrange
         commonStubsFetchCurrentRate();
-        when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(stringResponseEntity.getStatusCode()).thenReturn(HttpStatus.OK);
 
         //Act
         BitcoinRate expectedRate = coinDeskService.fetchCurrentBitcoinRate(USD);
@@ -108,7 +116,7 @@ public class CoinDeskServiceTest extends CoinDeskDemoApplicationTest {
 
         //Arrange
         commonStubsFetchCurrentRate();
-        when(response.getStatusCode()).thenReturn(HttpStatus.SERVICE_UNAVAILABLE);
+        when(stringResponseEntity.getStatusCode()).thenReturn(HttpStatus.SERVICE_UNAVAILABLE);
 
         //Act
         coinDeskService.fetchCurrentBitcoinRate(USD);
@@ -117,9 +125,9 @@ public class CoinDeskServiceTest extends CoinDeskDemoApplicationTest {
     @Test
     public void whenFetchHistoricalRateDetailsThenReturnSuccess() throws IOException {
         //Arrange
-        when(response.getBody()).thenReturn(historicalRate);
-        when(response.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(restTemplate.getForEntity(stringArgumentCaptor.capture(), eq(String.class))).thenReturn(response);
+        when(stringResponseEntity.getBody()).thenReturn(historicalRate);
+        when(stringResponseEntity.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(restTemplate.getForEntity(stringArgumentCaptor.capture(), eq(String.class))).thenReturn(stringResponseEntity);
 
         //Act
         BitcoinRateStatistics expectedStatistics = coinDeskService.
@@ -140,20 +148,29 @@ public class CoinDeskServiceTest extends CoinDeskDemoApplicationTest {
         thrown.expectMessage(Constants.ERR_TRY_AGAIN_LATER.value());
 
         //Arrange
-        when(response.getBody()).thenReturn(historicalRate);
-        when(response.getStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);
-        when(restTemplate.getForEntity(stringArgumentCaptor.capture(), eq(String.class))).thenReturn(response);
+        when(stringResponseEntity.getBody()).thenReturn(historicalRate);
+        when(stringResponseEntity.getStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);
+        when(restTemplate.getForEntity(stringArgumentCaptor.capture(), eq(String.class))).thenReturn(stringResponseEntity);
 
         //Act
         coinDeskService.fetchHistoricalRateDetails(USD, START_DATE, END_DATE);
     }
 
     @Test
-    public void fetchHistoricalRateDetails() {
-    }
+    public void fetchSupportedCurrencies() throws IOException {
+        //Arrange
+        SupportedCurrency actualSupportedCurrency = SupportedCurrency.builder().country("US").currency("USD").build();
+        when(currencyResponseEntity.getBody()).thenReturn(Collections.singletonList(actualSupportedCurrency));
+        when(restTemplate.exchange(stringArgumentCaptor.capture(), eq(HttpMethod.GET), eq(null),
+                any(ParameterizedTypeReference.class))).thenReturn(currencyResponseEntity);
 
-    @Test
-    public void fetchSupportedCurrencies() {
+        //Act
+        List<SupportedCurrency> expectedSupportedCurrencies = coinDeskService.fetchSupportedCurrencies();
+
+        //Assert
+        collector.checkThat(stringArgumentCaptor.getAllValues().size(), is(equalTo(1)));
+        collector.checkThat(actualSupportedCurrency.getCurrency(), is(equalTo(expectedSupportedCurrencies.get(0).getCurrency())));
+        collector.checkThat(actualSupportedCurrency.getCountry(), is(equalTo(expectedSupportedCurrencies.get(0).getCountry())));
     }
 
     private void commonStubsFetchCurrentRate() throws IOException {
@@ -162,7 +179,7 @@ public class CoinDeskServiceTest extends CoinDeskDemoApplicationTest {
         when(root.get(stringArgumentCaptor.capture())).thenReturn(root);
         doReturn(root).when(mapper).readTree(stringArgumentCaptor.capture());
         doReturn(actualRate).when(mapper).convertValue(root, BitcoinRate.class);
-        when(response.getBody()).thenReturn(RESPONSE_BODY);
-        when(restTemplate.getForEntity(anyString(), eq(String.class))).thenReturn(response);
+        when(stringResponseEntity.getBody()).thenReturn(RESPONSE_BODY);
+        when(restTemplate.getForEntity(anyString(), eq(String.class))).thenReturn(stringResponseEntity);
     }
 }
