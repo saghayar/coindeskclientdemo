@@ -46,6 +46,9 @@ public class CoinDeskService implements ICoinDeskService {
         this.mapper = mapper;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BitcoinRate fetchCurrentBitcoinRate(String currency) throws IOException {
         ResponseEntity<String> response = restTemplate.getForEntity(String.format(currentBitcoinRateUrl, currency),
@@ -53,6 +56,8 @@ public class CoinDeskService implements ICoinDeskService {
         if (HttpStatus.OK != response.getStatusCode()) {
             throw new BitcoinRateFetchException(Constants.ERR_TRY_AGAIN_LATER.value());
         }
+
+        //Parsing result , extracting bpi and converting it to java bean, in case null object throw exception
         JsonNode root = mapper.readTree(response.getBody());
         JsonNode requiredCurrency = root.path(BPI).get(currency);
         Optional<BitcoinRate> rateDetailsOpt = Optional.ofNullable(mapper.convertValue(requiredCurrency,
@@ -60,14 +65,21 @@ public class CoinDeskService implements ICoinDeskService {
         return rateDetailsOpt.orElseThrow(BitcoinRateFetchException::new);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public BitcoinRateStatistics fetchHistoricalRateDetails(String currency, LocalDate startDate, LocalDate endDate) throws IOException {
+    public BitcoinRateStatistics fetchHistoricalRateDetails(String currency, LocalDate startDate, LocalDate endDate)
+            throws IOException {
         ResponseEntity<String> response = restTemplate.getForEntity(String.format(historicalBitcoinRateUrl,
                 currency, startDate.toString(), endDate.toString()), String.class);
 
         if (HttpStatus.OK != response.getStatusCode()) {
             throw new BitcoinRateFetchException(Constants.ERR_TRY_AGAIN_LATER.value());
         }
+
+        //Parsing result ,extracting bpi and getting it as Iterable in order to obtain Stream of JsonNode
+        //Calculating  lowest ,highest value from summaryStatistics()
         JsonNode root = mapper.readTree(response.getBody());
         Iterable<JsonNode> iterable = () -> root.path(BPI).iterator();
         DoubleSummaryStatistics statistics = StreamSupport.stream(iterable.spliterator(), false)
@@ -80,6 +92,9 @@ public class CoinDeskService implements ICoinDeskService {
                 .build();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public List<SupportedCurrency> fetchSupportedCurrencies() {
         if (!supportedCurrencyList.isEmpty()) {
             return supportedCurrencyList;
@@ -96,3 +111,4 @@ public class CoinDeskService implements ICoinDeskService {
         return this.supportedCurrencyList;
     }
 }
+

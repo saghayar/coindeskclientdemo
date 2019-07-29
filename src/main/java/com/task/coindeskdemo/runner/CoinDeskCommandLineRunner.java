@@ -35,18 +35,18 @@ public class CoinDeskCommandLineRunner implements CommandLineRunner {
         do {
             log.info(INPUT_REQUEST.value());
             String currency = scanner.next();
-            if (coinDeskUtil.isCurrencyValid(currency)) {
+            if (coinDeskUtil.isCurrencyValid(currency.toUpperCase())) {
                 //Fetching current rate
-                BitcoinRate currentRate = coinDeskService.fetchCurrentBitcoinRate(currency);
+                final BitcoinRate currentRate = coinDeskService.fetchCurrentBitcoinRate(currency.toUpperCase());
 
-                //Fetching historical rates for last 30 days
+                //Fetching historical rates for last 30 days (as per requirement)
                 final LocalDate endDate = LocalDate.now();
                 final LocalDate startDate = endDate.minusDays(30);
-                BitcoinRateStatistics historicalRate = coinDeskService.fetchHistoricalRateDetails(currency,
+                final BitcoinRateStatistics historicalRate = coinDeskService.fetchHistoricalRateDetails(currency.toUpperCase(),
                         startDate, endDate);
 
                 //Displaying result
-                long diff = ChronoUnit.DAYS.between(startDate, endDate);
+                final long diff = ChronoUnit.DAYS.between(startDate, endDate);
                 log.info(CURRENT_RATE.value(), currentRate.getRate());
                 log.info(HISTORICAL_RATE_MIN.value(), diff, historicalRate.getLowest(), currency);
                 log.info(HISTORICAL_RATE_MAX.value(), diff, historicalRate.getHighest(), currency);
@@ -61,10 +61,10 @@ public class CoinDeskCommandLineRunner implements CommandLineRunner {
 
     /**
      * @param scanner
-     * @return True if user answer 1  , then process will be repeated
-     * False if user answers 2 ,then session will be terminated
-     * if provided input is invalid then continue requesting input from user until to get valid  1 OR 2 answer
-     * in order to decide moving forward
+     * @return True if user answer Y ,then process will be repeated
+     *          False if user answers N ,then current session will be terminated
+     *          if provided input is invalid then it will continue requesting input from user until to get valid  Yes OR No input
+     *          in order to decide moving forward
      */
     private boolean nextStage(Scanner scanner) {
         boolean result = true;
@@ -86,10 +86,10 @@ public class CoinDeskCommandLineRunner implements CommandLineRunner {
     }
 
     private boolean isRetry(String input) {
-        return "1".equalsIgnoreCase(input);
+        return YES.value().equalsIgnoreCase(input);
     }
 
     private boolean isTerminate(String input) {
-        return "2".equalsIgnoreCase(input);
+        return NO.value().equalsIgnoreCase(input);
     }
 }

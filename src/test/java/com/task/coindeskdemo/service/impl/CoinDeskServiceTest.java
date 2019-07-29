@@ -8,7 +8,6 @@ import com.task.coindeskdemo.model.BitcoinRateStatistics;
 import com.task.coindeskdemo.model.SupportedCurrency;
 import com.task.coindeskdemo.utils.Constants;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
@@ -17,8 +16,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,14 +38,19 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 public class CoinDeskServiceTest extends CoinDeskDemoApplicationTest {
-    public static final String USD = "USD";
+
+    private static final String DESCRIPTION = "Description";
     private static final String RESPONSE_BODY = "BODY";
     private static final String BPI = "bpi";
-    public static final LocalDate START_DATE = LocalDate.of(2019, 06, 27);
-    public static final LocalDate END_DATE = LocalDate.of(2019, 07, 27);
+    private static final String USD = "USD";
+    private static final LocalDate START_DATE = LocalDate.of(2019, 06, 27);
+    private static final LocalDate END_DATE = LocalDate.of(2019, 07, 27);
     private static String historicalRate;
     private BitcoinRate actualRate;
     private BitcoinRateStatistics actualRateStatistics;
+
+    @Value("classpath:historical-rates.json")
+    private Resource stateFile;
 
     @Autowired
     private CoinDeskService coinDeskService;
@@ -64,18 +70,13 @@ public class CoinDeskServiceTest extends CoinDeskDemoApplicationTest {
     @Rule
     public ErrorCollector collector = new ErrorCollector();
 
-    @BeforeClass
-    public static void init() throws IOException {
-        historicalRate = new String(Files.readAllBytes(Paths.get("/Users/admin/IdeaProjects/coindeskdemo/src/test/resources/historical-rates.json")));
-    }
-
     @Before
     public void setUp() throws Exception {
         actualRate = BitcoinRate.builder()
-                .code("USD")
+                .code(USD)
                 .symbol("$")
                 .rate("1234.56")
-                .description("Description")
+                .description(DESCRIPTION)
                 .rateFloat(12.98D)
                 .build();
 
@@ -83,6 +84,8 @@ public class CoinDeskServiceTest extends CoinDeskDemoApplicationTest {
                 .highest(12563.215)
                 .lowest(9422.4517)
                 .build();
+
+        historicalRate = new String(Files.readAllBytes(Paths.get(stateFile.getFile().getCanonicalPath())));
     }
 
     @Test
@@ -157,7 +160,7 @@ public class CoinDeskServiceTest extends CoinDeskDemoApplicationTest {
     }
 
     @Test
-    public void fetchSupportedCurrencies() throws IOException {
+    public void fetchSupportedCurrencies() {
         //Arrange
         SupportedCurrency actualSupportedCurrency = SupportedCurrency.builder().country("US").currency("USD").build();
         when(currencyResponseEntity.getBody()).thenReturn(Collections.singletonList(actualSupportedCurrency));

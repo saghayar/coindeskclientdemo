@@ -15,6 +15,6 @@ public class CoinDeskUtil {
 
         return coinDeskService.fetchSupportedCurrencies()
                 .stream()
-                .anyMatch(c -> currency.equalsIgnoreCase(c.getCurrency()));
+                .anyMatch(c -> currency.equals(c.getCurrency()));
     }
 }
