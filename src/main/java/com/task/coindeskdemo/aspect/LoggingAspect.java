@@ -16,8 +16,7 @@ public class LoggingAspect {
 
     @Pointcut("within(com.task.coindeskdemo.service.impl.*)")
     public void impl() {
-        //Does nothing because need this method for only define Pointcut for Service implementation classes
-        // since multiple pointcuts would create complexity on below method it is better to get this separated
+        //Does nothing because need this method in order to define Pointcut
     }
 
     /**

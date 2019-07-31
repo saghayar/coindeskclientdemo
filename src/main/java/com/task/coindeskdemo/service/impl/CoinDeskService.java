@@ -111,4 +111,3 @@ public class CoinDeskService implements ICoinDeskService {
         return this.supportedCurrencyList;
     }
 }
-

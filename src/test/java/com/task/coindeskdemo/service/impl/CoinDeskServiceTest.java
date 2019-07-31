@@ -46,29 +46,22 @@ public class CoinDeskServiceTest extends CoinDeskDemoApplicationTest {
     private static final LocalDate START_DATE = LocalDate.of(2019, 06, 27);
     private static final LocalDate END_DATE = LocalDate.of(2019, 07, 27);
     private static String historicalRate;
-    private BitcoinRate actualRate;
-    private BitcoinRateStatistics actualRateStatistics;
-
-    @Value("classpath:historical-rates.json")
-    private Resource stateFile;
-
-    @Autowired
-    private CoinDeskService coinDeskService;
-
-    @MockBean
-    private ResponseEntity<String> stringResponseEntity;
-
-    @MockBean
-    private ResponseEntity<List<SupportedCurrency>> currencyResponseEntity;
-
-    @Captor
-    private ArgumentCaptor<String> stringArgumentCaptor;
-
     @Rule
     public ExpectedException thrown = ExpectedException.none();
-
     @Rule
     public ErrorCollector collector = new ErrorCollector();
+    private BitcoinRate actualRate;
+    private BitcoinRateStatistics actualRateStatistics;
+    @Value("classpath:historical-rates.json")
+    private Resource stateFile;
+    @Autowired
+    private CoinDeskService coinDeskService;
+    @MockBean
+    private ResponseEntity<String> stringResponseEntity;
+    @MockBean
+    private ResponseEntity<List<SupportedCurrency>> currencyResponseEntity;
+    @Captor
+    private ArgumentCaptor<String> stringArgumentCaptor;
 
     @Before
     public void setUp() throws Exception {
